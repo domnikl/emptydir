@@ -12,11 +12,16 @@
 void print_empty_directories_in(char *path);
 int is_directory(char *path);
 
+void usage()
+{
+	printf("usage: emptydir <path1> <path2> ...\n");
+	exit(1);
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc == 2 && (strcmp("-h", argv[1]) == 0 || strcmp("--help", argv[1]) == 0)) {
-		printf("Usage: emptydir <path1> <path2>\n");
-		return 0;
+		usage();
 	}
 
 	unsigned int i;
