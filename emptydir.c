@@ -51,23 +51,18 @@ int is_directory(char *path)
 void print_empty_directories_in(char *path)
 {
 	DIR *dir;
-	struct dirent *ent;
 
-	dir = opendir(path);
-
-	if (dir == NULL) {
+	if ((dir = opendir(path)) == NULL) {
 		fprintf(stderr, "Could not open directory '%s'\n", path);
 		return;
 	}
 
+	struct dirent *ent;
 	unsigned int has_files = 0;
 	while ((ent = readdir(dir)) != NULL) {
-		// TODO: ignore .gitignore
-		if (strcmp(".gitignore", ent->d_name) == 0) {
+		if (strcmp(".gitignore", ent->d_name) == 0 || strcmp(".hgignore", ent->d_name) == 0) {
 			continue;
-		}
-
-		if (is_directory(ent->d_name) == IS_FILE) {
+		} else if (is_directory(ent->d_name) == IS_FILE) {
 			has_files = 1;
 		} else if (strcmp(".", ent->d_name) != 0 && strcmp("..", ent->d_name) != 0) {
 			has_files = 1;
@@ -83,6 +78,7 @@ void print_empty_directories_in(char *path)
 			}
 
 			free(new_path);
+			new_path = NULL;
 		}
 	}
 
