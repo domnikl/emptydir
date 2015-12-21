@@ -4,16 +4,21 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-// stat returns
+// is_directory return values
 #define ERROR_COULD_NOT_STAT_FILE 1
 #define IS_DIR 2
 #define IS_FILE 0
 
 void print_empty_directories_in(char *path);
-int is_dir(char *path);
+int is_directory(char *path);
 
 int main(int argc, char *argv[])
 {
+	if (argc == 2 && (strcmp("-h", argv[1]) == 0 || strcmp("--help", argv[1]) == 0)) {
+		printf("Usage: emptydir <path1> <path2>\n");
+		return 0;
+	}
+
 	unsigned int i;
 
 	for (i = 1; i < argc; i++) {
@@ -23,7 +28,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int is_dir(char *path)
+int is_directory(char *path)
 {
 	int is_dir;
 	struct stat s;
@@ -62,7 +67,7 @@ void print_empty_directories_in(char *path)
 			continue;
 		}
 
-		if (is_dir(ent->d_name) == IS_FILE) {
+		if (is_directory(ent->d_name) == IS_FILE) {
 			has_files = 1;
 		} else if (strcmp(".", ent->d_name) != 0 && strcmp("..", ent->d_name) != 0) {
 			has_files = 1;
@@ -73,7 +78,7 @@ void print_empty_directories_in(char *path)
         	strcat(new_path, "/");
         	strcat(new_path, ent->d_name);
 
-			if (is_dir(new_path) == IS_DIR) {
+			if (is_directory(new_path) == IS_DIR) {
 				print_empty_directories_in(new_path);
 			}
 

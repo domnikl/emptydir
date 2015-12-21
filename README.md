@@ -1,6 +1,6 @@
 # emptydir
 
-Searches a directory for empty subdirs and prints a list of it to be used as input for other tools.
+Searches a directory recursively for empty subdirs and prints a list of them to be used as input for other tools.
 
 ## development
 
