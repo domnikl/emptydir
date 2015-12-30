@@ -39,15 +39,15 @@ int is_directory(char *path)
 	struct stat s;
 
 	if (stat(path, &s) == 0) {
-	    if (s.st_mode & S_IFDIR) {
-	        is_dir = IS_DIR;
-	    } else if (s.st_mode & S_IFREG) {
-	        is_dir = IS_FILE;
-	    } else {
-	        is_dir = IS_FILE;
-	    }
+		if (s.st_mode & S_IFDIR) {
+			is_dir = IS_DIR;
+		} else if (s.st_mode & S_IFREG) {
+			is_dir = IS_FILE;
+		} else {
+			is_dir = IS_FILE;
+		}
 	} else {
-	    is_dir = ERROR_COULD_NOT_STAT_FILE;
+		is_dir = ERROR_COULD_NOT_STAT_FILE;
 	}
 
 	return is_dir;
@@ -75,8 +75,8 @@ void print_empty_directories_in(char *path)
 			char *new_path = (char*) malloc(sizeof(char) * (strlen(path) + 1 + strlen(ent->d_name) + 1));
 
 			strcpy(new_path, path);
-        	strcat(new_path, "/");
-        	strcat(new_path, ent->d_name);
+			strcat(new_path, "/");
+			strcat(new_path, ent->d_name);
 
 			if (is_directory(new_path) == IS_DIR) {
 				print_empty_directories_in(new_path);
