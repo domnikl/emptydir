@@ -1,7 +1,7 @@
 PROG=emptydir
 CC=gcc
 CFLAGS=-Wall
-OBJS=
+OBJS=getopt.o
 PREFIX=/usr/local/bin
 
 default: build

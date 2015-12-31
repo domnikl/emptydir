@@ -4,6 +4,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include "getopt.h"
+
 // is_directory return values
 #define ERROR_COULD_NOT_STAT_FILE 1
 #define IS_DIR 2
@@ -17,20 +19,35 @@ int is_directory(char *path);
 
 void usage()
 {
-	printf("usage: emptydir <path1> <path2> ...\n");
+	printf("usage: emptydir [options] <path1> <path2> ...\n");
+	printf("\t-a\tsearch in hidden directories\n");
 	exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-	if (argc == 2 && (strcmp("-h", argv[1]) == 0 || strcmp("--help", argv[1]) == 0)) {
-		usage();
-	}
+    unsigned int options = 0;
+    const char *ch;
 
-    unsigned int options = OPTIONS_SHOW_HIDDEN;
+    while ((ch = GETOPT(argc, argv)) != NULL) {
+        GETOPT_SWITCH(ch) {
+        GETOPT_OPT("-a"):
+            options = options | OPTIONS_SHOW_HIDDEN;
+            break;
+        GETOPT_MISSING_ARG:
+            printf("missing argument to %s\n", ch);
+            /* FALLTHROUGH */
+        GETOPT_DEFAULT:
+            usage();
+        }
+    }
+
+    argc -= optind;
+    argv += optind;
+
 	unsigned int i;
 
-	for (i = 1; i < argc; i++) {
+	for (i = 0; i < argc; i++) {
 		print_empty_directories_in(argv[i], options);
 	}
 
