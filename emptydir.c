@@ -9,7 +9,10 @@
 #define IS_DIR 2
 #define IS_FILE 0
 
-void print_empty_directories_in(char *path);
+// options to be set from CLI
+#define OPTIONS_SHOW_HIDDEN 1
+
+void print_empty_directories_in(char *path, unsigned int options);
 int is_directory(char *path);
 
 void usage()
@@ -24,10 +27,11 @@ int main(int argc, char *argv[])
 		usage();
 	}
 
+    unsigned int options = OPTIONS_SHOW_HIDDEN;
 	unsigned int i;
 
 	for (i = 1; i < argc; i++) {
-		print_empty_directories_in(argv[i]);
+		print_empty_directories_in(argv[i], options);
 	}
 
 	return 0;
@@ -53,7 +57,7 @@ int is_directory(char *path)
 	return is_dir;
 }
 
-void print_empty_directories_in(char *path)
+void print_empty_directories_in(char *path, unsigned int options)
 {
 	DIR *dir;
 
@@ -69,7 +73,12 @@ void print_empty_directories_in(char *path)
 			continue;
 		} else if (is_directory(ent->d_name) == IS_FILE) {
 			has_files = 1;
-		} else if (strcmp(".", ent->d_name) != 0 && strcmp("..", ent->d_name) != 0) {
+        } else if (strcmp(".", ent->d_name) == 0 || strcmp("..", ent->d_name) == 0) {
+            continue;
+        } else if ((options & OPTIONS_SHOW_HIDDEN) != OPTIONS_SHOW_HIDDEN && strncmp(".", ent->d_name, 1) == 0) {
+            // starting with . = hidden
+            continue;
+		} else {
 			has_files = 1;
 			// do the recursive thing
 			char *new_path = (char*) malloc(sizeof(char) * (strlen(path) + 1 + strlen(ent->d_name) + 1));
@@ -79,7 +88,7 @@ void print_empty_directories_in(char *path)
 			strcat(new_path, ent->d_name);
 
 			if (is_directory(new_path) == IS_DIR) {
-				print_empty_directories_in(new_path);
+				print_empty_directories_in(new_path, options);
 			}
 
 			free(new_path);
