@@ -13,14 +13,19 @@
 
 // options to be set from CLI
 #define OPTIONS_SHOW_HIDDEN 1
+#define OPTIONS_ESCAPE_PATHS 2
 
 void print_empty_directories_in(char *path, unsigned int options);
 int is_directory(char *path);
+int has_option(int options, int option);
+void print_path(char *path, int options);
+void escape_path(char *out, char *path);
 
 void usage()
 {
 	printf("usage: emptydir [options] <path1> <path2> ...\n");
-	printf("\t-a\tsearch in hidden directories\n");
+	printf("\t-a          \tsearch in hidden directories\n");
+    printf("\t-b, --escape\tescape output paths to be used in conjunction with xargs\n");
 	exit(1);
 }
 
@@ -34,6 +39,10 @@ int main(int argc, char *argv[])
         GETOPT_OPT("-a"):
             options = options | OPTIONS_SHOW_HIDDEN;
             break;
+        GETOPT_OPT("-b"):
+        GETOPT_OPT("--escape"):
+            options = options | OPTIONS_ESCAPE_PATHS;
+            break;
         GETOPT_MISSING_ARG:
             printf("missing argument to %s\n", ch);
             /* FALLTHROUGH */
@@ -44,6 +53,10 @@ int main(int argc, char *argv[])
 
     argc -= optind;
     argv += optind;
+
+    if (argc == 0) {
+        usage();
+    }
 
 	unsigned int i;
 
@@ -92,10 +105,7 @@ void print_empty_directories_in(char *path, unsigned int options)
 			has_files = 1;
         } else if (strcmp(".", ent->d_name) == 0 || strcmp("..", ent->d_name) == 0) {
             continue;
-        } else if ((options & OPTIONS_SHOW_HIDDEN) != OPTIONS_SHOW_HIDDEN && strncmp(".", ent->d_name, 1) == 0) {
-            // starting with . = hidden
-            continue;
-		} else {
+		} else if (strncmp(".", ent->d_name, 1) != 0 || has_option(options, OPTIONS_SHOW_HIDDEN)) {
 			has_files = 1;
 			// do the recursive thing
 			char *new_path = (char*) malloc(sizeof(char) * (strlen(path) + 1 + strlen(ent->d_name) + 1));
@@ -114,8 +124,44 @@ void print_empty_directories_in(char *path, unsigned int options)
 	}
 
 	if (has_files == 0) {
-		printf("%s\n", path);
+        print_path(path, options);
 	}
 
 	closedir(dir);
+}
+
+void escape_path(char *out, char *path) 
+{
+    unsigned int i;
+    size_t l;
+
+    l = strlen(path);
+
+    for (i = 0; i <= l; i++, path++, out++) {
+        if (*path == '\0') {
+            break;
+        } else if (*path == ' ') {
+            memcpy(out, "\\ ", sizeof(char) * 2);
+            out++;
+        } else {
+            memcpy(out, path, sizeof(char));
+        }
+    }
+}
+
+void print_path(char *path, int options)
+{
+    if (has_option(options, OPTIONS_ESCAPE_PATHS)) {
+        char *escaped = malloc(sizeof(char*) * strlen(path) * 2);
+        escape_path(escaped, path);
+        printf("%s\n", escaped);
+        free(escaped);
+    } else {
+        printf("%s\n", path);    
+    }
+}
+
+int has_option(int options, int option) 
+{
+    return (options & option) == option;
 }
